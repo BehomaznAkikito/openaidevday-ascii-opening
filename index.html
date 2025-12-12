@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta property="og:image"
+  content="https://behomaznakikito.github.io/openaidevday-ascii-opening/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
   <title>DevDay ASCII Opening</title>
   <style>
     :root {
@@ -279,22 +283,98 @@
   100%    { opacity: 0; transform: scale(2.90); }
 }
 
-.frog {
-  text-align: center;
-  filter: drop-shadow(0 0 28px rgba(255,255,255,.18));
+:root { --frog-width: 300px; }
+
+/* いまの .panel.frog の中で中央寄せ */
+.panel.frog{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.frog .eye   { color: var(--frog-eye); }
-.frog .body  { color: var(--frog-body); }
-.frog .feet  { color: var(--frog-feet); }
-
-.frog-base {
-  margin-top: 10px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #0e1426, #070a14);
+/* もともとの absolute bottom/left は一旦やめる */
+.frog-wrapper{
+  position: relative;
   display: inline-block;
-  font-size: .95em;
+  width: var(--frog-width);
+  height: 140px; /* face と同じにしておくと安定 */
+}
+
+/* ここからは君の “ちゃんとできてるCSS” をほぼそのまま */
+.face {
+  position: relative;
+  width: 300px;
+  height: 140px;
+  font-family: monospace;
+  font-size: 32px;
+  color: limegreen;
+  text-align: center;
+  line-height: 1;
+}
+
+.eyes {
+  position: absolute;
+  top: 0;
+  left: 51%;
+  transform: translateX(-50%);
+  color: deepskyblue;
+  letter-spacing: 0.1em;
+  font-size: 36px;
+}
+
+.nose {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: deepskyblue;
+  font-size: 32px;
+}
+.nose span { display: inline-block; }
+.nose .right {
+  transform: scaleX(-1);
+  margin-left: -6px;
+}
+
+.chest {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: limegreen;
+}
+
+.mouth {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: limegreen;
+}
+
+.feet {
+  position: absolute;
+  bottom: 0;
+  left: 152px;
+  transform: translateX(-50%);
+  color: orange;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+/* これが “アニメの本体” */
+.panel.frog.pulse .frog-anim{
+  opacity: 0;
+  transform: scale(.75);
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: finalFade 12s linear infinite; /* ← ここは元の秒数に合わせて */
+}
+
+/* transform を他と喧嘩させない */
+.panel.frog.pulse .frog-wrapper{ 
+  position: relative;
+  transform: none; /* 念のため */
 }
 
   </style>
@@ -387,27 +467,20 @@
         </div>
       </div>
       <!-- Scene 5 : FINAL FROG -->
-      <div class="scene final">
-        <div class="panel frog pulse">
-      <pre>
-              <span class="eye">◎ ◎</span>
-              <span class="body">, ,</span>
-
-            <span class="body">( ←   → )</span>
-            <span class="body">(   •   )</span>
-            <span class="body">( >   < )</span>
-
-            <span class="feet">^^^     ^^^</span>
-      </pre>
-
-          <div class="frog-base">
-            OpenAI <span style="color:#5fd3ff">DevDay</span>
-            <span style="color:#66d36e">[</span><span style="color:#ff9f43">2025</span><span style="color:#66d36e">]</span>
-          </div>
-        </div>
+<div class="panel frog pulse">
+  <div class="frog-anim">
+    <div class="frog-wrapper">
+      <div class="face">
+        <div class="eyes">◎ ◎</div>
+        <div class="nose"><span class="left">,</span><span class="right">,</span></div>
+        <div class="chest">(.>__<.)</div>
+        <div class="mouth">(←→)</div>
+        <div class="feet">^^^  ^^^</div>
       </div>
-
     </div>
+  </div>
+</div>
+
 
     <div class="hint">DevDay ASCII intro • pure HTML + CSS • loops every 12s</div>
   </div>
