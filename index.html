@@ -1,14 +1,332 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DevDay ASCII Opening</title>
+  <style>
+    :root {
+      --bg: #05060a;
+      --fg: rgba(255,255,255,.88);
+      --dim: rgba(255,255,255,.45);
+      --glow: rgba(255,255,255,.18);
+    }
 
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(1200px 800px at 50% 35%, #0b1020 0%, var(--bg) 55%, #000 100%);
+      color: var(--fg);
+      overflow: hidden;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .frame {
+      transform-origin: center;
+    }
+    /* stage */
+    .stage {
+      position: relative;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .frame {
+      position: relative;
+      width: min(110ch, 92vw);
+      filter: drop-shadow(0 0 14px var(--glow));
+    }
+
+    /* subtle vignette + film grain */
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: -30vh -30vw;
+      background:
+        radial-gradient(closest-side at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.55) 100%);
+      pointer-events: none;
+      z-index: 6;
+    }
+    .frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,.03) 0px,
+        rgba(255,255,255,.03) 1px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 6px
+      );
+      mix-blend-mode: overlay;
+      opacity: .35;
+      pointer-events: none;
+      z-index: 7;
+      animation: scan 2.1s linear infinite;
+    }
+
+    @keyframes scan {
+      from { transform: translateY(-12px); }
+      to   { transform: translateY(12px); }
+    }
+
+    /* starfield (CSS-only dots) */
+    .stars {
+      position: absolute;
+      inset: -20vh -20vw;
+      z-index: 0;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.85) 0 1px, transparent 2px) 10% 20% / 260px 260px,
+        radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px) 35% 40% / 320px 320px,
+        radial-gradient(circle, rgba(255,255,255,.55) 0 1px, transparent 2px) 60% 30% / 280px 280px,
+        radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 2px) 80% 55% / 340px 340px,
+        radial-gradient(circle, rgba(255,255,255,.45) 0 1px, transparent 2px) 15% 70% / 300px 300px,
+        radial-gradient(circle, rgba(255,255,255,.50) 0 1px, transparent 2px) 55% 75% / 360px 360px;
+      opacity: .75;
+      animation: drift 14s linear infinite;
+      filter: blur(.15px);
+    }
+    @keyframes drift {
+      from { transform: translate3d(0,0,0); }
+      to   { transform: translate3d(-120px, 80px, 0); }
+    }
+
+    /* ASCII panels */
+    .panel {
+      position: relative;
+      z-index: 5;
+      padding: 18px 22px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      background: rgba(0,0,0,.20);
+      backdrop-filter: blur(3px);
+    }
+    /* final scene itself stays centered and static */
+    .scene.final{
+      z-index: 10;
+      opacity: 1;         /* .scene の opacity:0 を打ち消す */
+      transform: none;    /* 親の transform を無効化 */
+      transition: none;
+      display: grid;
+      place-items: center; /* ★常に中央配置 */
+    }
+
+    /* animate the frog panel (not the whole scene) */
+    .scene.final .panel{
+      animation: finalFade 12s infinite;
+      transform-origin: 50% 50%;
+      will-change: transform, opacity;
+    }
+
+    /* FINAL: allow the frog panel to go wider */
+    .scene.final {
+      z-index: 10;
+      animation-timing-function: cubic-bezier(.12, 1.05, .12, 1);
+    }
+
+    .scene.final .panel {
+      width: min(1200px, 96vw);
+    }
+
+    /* FINAL: scale from center */
+    .scene.final .frog {
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
+
+    pre {
+      margin: 0;
+      line-height: 1.05;
+      letter-spacing: .02em;
+      font-size: clamp(11px, 1.2vw, 15px);
+      white-space: pre;
+      user-select: none;
+    }
+
+    /* glow pulse for the big reveal */
+    .pulse {
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { filter: drop-shadow(0 0 10px rgba(255,255,255,.08)); opacity: 1; }
+      50%     { filter: drop-shadow(0 0 22px rgba(255,255,255,.20)); opacity: .96; }
+    }
+
+    /* scene switching (pure CSS timeline) */
+    .scene {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: translateY(8px) scale(.995);
+      transition: opacity .5s ease, transform .5s ease;
+      z-index: 1;
+
+      display: grid;
+      place-items: center;
+    }
+
+    /* final frog always on top */
+    .scene.final {
+      z-index: 10;
+      transform: none;
+      transition: none;
+    }
+
+    /* Timeline: total 12s loop */
+    .s1 { animation: show1 12s infinite; }
+    .s2 { animation: show2 12s infinite; }
+    .s3 { animation: show3 12s infinite; }
+    .s4 { animation: show4 12s infinite; }
+
+    @keyframes show1 {
+      0%   { opacity: 0; transform: translateY(10px) scale(.99); }
+      3%   { opacity: 1; transform: translateY(0) scale(1); }
+      26%  { opacity: 1; }
+      30%  { opacity: 0; transform: translateY(-6px) scale(.995); }
+      100% { opacity: 0; }
+    }
+    @keyframes show2 {
+      0%   { opacity: 0; }
+      28%  { opacity: 0; transform: translateY(10px) scale(.99); }
+      32%  { opacity: 1; transform: translateY(0) scale(1); }
+      52%  { opacity: 1; }
+      56%  { opacity: 0; transform: translateY(-6px) scale(.995); }
+      100% { opacity: 0; }
+    }
+    @keyframes show3 {
+      0%   { opacity: 0; }
+      54%  { opacity: 0; transform: translateY(10px) scale(.99); }
+      58%  { opacity: 1; transform: translateY(0) scale(1); }
+      76%  { opacity: 1; }
+      80%  { opacity: 0; transform: translateY(-6px) scale(.995); }
+      100% { opacity: 0; }
+    }
+    @keyframes show4 {
+      0%   { opacity: 0; }
+      76%  { opacity: 0; transform: translateY(10px) scale(.99); }
+      80%  { opacity: 1; transform: translateY(0) scale(1); }
+      88%  { opacity: 1; }
+      90%  { opacity: 0; transform: translateY(-6px) scale(.995); }
+      100% { opacity: 0; }
+    }
+
+    /* typing cursor effect */
+    .cursor::after {
+      content: "█";
+      margin-left: .5ch;
+      opacity: 0;
+      animation: blink .9s steps(2, end) infinite;
+    }
+    @keyframes blink {
+      0%, 45% { opacity: 0; }
+      50%,100% { opacity: 1; }
+    }
+
+    /* small shimmer on “data” lines */
+    .shimmer {
+      position: relative;
+      display: inline-block;
+      color: var(--dim);
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%,100% { opacity: .45; }
+      50%     { opacity: .85; }
+    }
+
+    /* footer hint */
+    .hint {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: rgba(255,255,255,.42);
+      z-index: 8;
+      user-select: none;
+    }
+    /* Frog colors */
+:root {
+  --frog-eye: #5fd3ff;
+  --frog-body: #66d36e;
+  --frog-feet: #ff9f43;
+  --frog-base: #0b0f1a;
+}
+
+
+@keyframes finalFade {
+  /* 隠れてる */
+  0%, 82% { opacity: 0; transform: scale(.75); }
+
+  /* 出る */
+  86%     { opacity: 1; transform: scale(1.00); }
+
+  /* ドン！ */
+  88%     { opacity: 1; transform: scale(2.90); }
+
+  /* ★4回脈動（大⇄小） */
+  90%     { opacity: 1; transform: scale(2.55); }
+  92%     { opacity: 1; transform: scale(2.90); }
+
+  94%     { opacity: 1; transform: scale(2.55); }
+  96%     { opacity: 1; transform: scale(2.90); }
+
+  97.5%   { opacity: 1; transform: scale(2.55); }
+  99%     { opacity: 1; transform: scale(2.90); }
+
+  /* 戻る */
+  100%    { opacity: 0; transform: scale(2.90); }
+}
+
+.frog {
+  text-align: center;
+  filter: drop-shadow(0 0 28px rgba(255,255,255,.18));
+}
+
+.frog .eye   { color: var(--frog-eye); }
+.frog .body  { color: var(--frog-body); }
+.frog .feet  { color: var(--frog-feet); }
+
+.frog-base {
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0e1426, #070a14);
+  display: inline-block;
+  font-size: .95em;
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="stars" aria-hidden="true"></div>
+
+    <div class="frame">
+      <!-- Scene 1 -->
+      <div class="scene s1">
+        <div class="panel">
+<pre class="cursor">
    .     .        .            .     .        .            .     .
         .     .        .             .     .        .            .
   .                 .       ____            .              .
                  .        / __ \___ _   __      .     .
    .     .               / / / / _ \ | / /           .         .
-        .     .         / /_/ /  __/ |/ /   signal  .     .
-  .                 .   \____/\___/|___/    lock    .     .
+        .     .         / /_/ /  __/ |/ /   <span class="shimmer">signal</span>  .     .
+  .                 .   \____/\___/|___/    <span class="shimmer">lock</span>    .     .
 
         .     .        .            .     .        .            .
-                   listening for the room to settle...
+                   <span class="shimmer">listening for the room to settle...</span>
+</pre>
+        </div>
+      </div>
+
+      <!-- Scene 2 -->
+      <div class="scene s2">
+        <div class="panel">
+<pre>
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  FEED: devday/opening  |  mode: live  |  latency: low  |  noise: minimal  │
 ├───────────────────────────────────────────────────────────────────────────┤
@@ -24,6 +342,14 @@
 │   └──────────┘   └──────────┘   └──────────┘   └──────────┘              │
 │                                                                           │
 └───────────────────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+      </div>
+
+      <!-- Scene 3 -->
+      <div class="scene s3">
+        <div class="panel pulse">
+<pre>
                           ┌───────────────────────┐
                           │        OPENAI         │
                           └───────────────────────┘
@@ -36,7 +362,15 @@
                  │   QUESTIONS   │  ⇄  │   CAPABILITY  │
                  └───────────────┘     └───────────────┘
 
-                 the lights don’t get louder, the thinking gets clearer
+                 <span class="shimmer">the lights don’t get louder, the thinking gets clearer</span>
+</pre>
+        </div>
+      </div>
+
+      <!-- Scene 4 -->
+      <div class="scene s4">
+        <div class="panel">
+<pre>
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                                                                           │
 │      ██████╗ ███████╗██╗   ██╗██████╗  █████╗ ██╗   ██╗                  │
@@ -46,16 +380,36 @@
 │      ██████╔╝███████╗ ╚████╔╝ ██████╔╝██║  ██║   ██║                     │
 │      ╚═════╝ ╚══════╝  ╚═══╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝                     │
 │                                                                           │
-│                         build with the future in mind                  │
+│                         <span class="shimmer">build with the future in mind</span>                  │
 │                                                                           │
 └───────────────────────────────────────────────────────────────────────────┘
-              ◎ ◎
-              , ,
+</pre>
+        </div>
+      </div>
+      <!-- Scene 5 : FINAL FROG -->
+      <div class="scene final">
+        <div class="panel frog pulse">
+      <pre>
+              <span class="eye">◎ ◎</span>
+              <span class="body">, ,</span>
 
-            ( ←   → )
-            (   •   )
-            ( >   < )
+            <span class="body">( ←   → )</span>
+            <span class="body">(   •   )</span>
+            <span class="body">( >   < )</span>
 
-            ^^^     ^^^
-OpenAI DevDay [2025]
-DevDay ASCII intro • pure HTML + CSS • loops every 12s
+            <span class="feet">^^^     ^^^</span>
+      </pre>
+
+          <div class="frog-base">
+            OpenAI <span style="color:#5fd3ff">DevDay</span>
+            <span style="color:#66d36e">[</span><span style="color:#ff9f43">2025</span><span style="color:#66d36e">]</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hint">DevDay ASCII intro • pure HTML + CSS • loops every 12s</div>
+  </div>
+</body>
+</html>
